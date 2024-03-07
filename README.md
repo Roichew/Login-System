@@ -1,5 +1,5 @@
 # Login-System
-To Run Program Through Command Prompt:-
+Run Program Through Command Prompt:-
 
 
 When Running in Visual Studio:
