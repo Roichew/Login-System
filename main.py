@@ -80,7 +80,6 @@ async def read_signup():
 async def signup(username: str = Form(...), password: str = Form(...)):
     conn = get_db_connection()
     try:
-        
         conn.commit()
     except sqlite3.IntegrityError:
         raise HTTPException(status_code=400, detail="Username already taken")
@@ -88,7 +87,7 @@ async def signup(username: str = Form(...), password: str = Form(...)):
         conn.close()
     return {"message": "User registered successfully"}
 
-@app.get("/uodate/", response_class=HTMLResponse)
+@app.get("/update/", response_class=HTMLResponse)
 async def read_signup():
     with open('Register.html', 'r') as f:
         html_content = f.read()
