@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="/static/Css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="login-box">
+    <h2>Login</h2>
+    <form>
+      <div class="user-box">
+        <input type="text" name="" id="username" required>
+        <label>Username</label>
+      </div>
+      <div class="user-box">
+        <input type="password" name="" id="password" required>
+        <label>Password</label>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+      <div class="registration-box">
+          <p>Not Registered Yet? <a class="registration" href="/register/">Click Here</a></p>
+      </div>
+
+  </div>
+</body>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    fetch('/login/', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Failed to login');
+        }
+    })
+    .then(data => {
+        document.getElementById('message').textContent = data.message;
+    })
+    .catch(error => {
+        document.getElementById('message').textContent = error.message;
+    });
+});
+</script>
+</html>

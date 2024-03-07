@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="/static/Css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="login-box">
+    <h2>Sign Up</h2>
+    <form>
+      <div class="user-box">
+        <input type="text" name="" id="username" required>
+        <label>Username</label>
+      </div>
+      <div class="user-box">
+        <input type="password" name="" id="password" required>
+        <label>Password</label>
+      </div>
+      <div class="user-box">
+        <input type="password" name="" id="confirm-password" required>
+        <label>Confirm Password</label>
+      </div>
+      <button type="submit">Register</button>
+    </form>
+    <div class="registration-box">
+      <p>Back to <a class="registration" href="\">Login</a></p>
+  </div>
+  </div>
+
+</body>
+
+<script>
+function showError(message) {
+  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('errorModal').style.display = 'block';
+}
+
+document.getElementById('signupForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    if(password==confirmPassword){
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
+
+    fetch('/signup/', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Failed to signup');
+        }
+    })
+    .then(data => {
+        document.getElementById('message').textContent = data.message + ' Please login.';
+    })
+    .catch(error => {
+        document.getElementById('message').textContent = error.message;
+    });
+
+  }else{
+    showError('Passwords do not match. Please try again.');
+  }
+  });
+
+ 
+</script>
+</html>
