@@ -89,7 +89,7 @@ async def signup(username: str = Form(...), password: str = Form(...)):
 
 @app.get("/update/", response_class=HTMLResponse)
 async def read_signup():
-    with open('Register.html', 'r') as f:
+    with open('changepw.html', 'r') as f:
         html_content = f.read()
     return HTMLResponse(content=html_content, status_code=200)
 
