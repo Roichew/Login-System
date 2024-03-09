@@ -1,6 +1,7 @@
 # Login-System
 Run Program Through Command Prompt:-
 
+PYTHON VERSION:  3.12.2
 
 When Running in Visual Studio:
 

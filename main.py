@@ -3,6 +3,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Form, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from fastapi.responses import JSONResponse
+from datetime import datetime, timedelta
+from pydantic import BaseModel
 import sqlite3
 import bcrypt
 import os
@@ -23,7 +28,7 @@ def initialize_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             hashed_password TEXT NOT NULL
-        )
+        ) 
     ''')
     conn.commit()
     conn.close()
@@ -123,3 +128,63 @@ async def read_signup():
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+SECRET_KEY = "a_very_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Dummy function to get a fake user
+def fake_hash_password(password: str):
+    return "fakehashed" + password
+
+# User model for demonstration purposes
+class User(BaseModel):
+    username: str
+
+# Modify or replace with your actual database model
+class UserInDB(User):
+    hashed_password: str
+
+# Function to authenticate user and return user if successful
+def authenticate_user(fake_db, username: str, password: str):
+    user = fake_db.get(username, None)
+    if not user or not fake_hash_password(password) == user.hashed_password:
+        return False
+    return user
+
+# Function to create access token
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+@app.post("/token")
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(get_db_connection(), form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/users/me")
+async def read_users_me(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"},)
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = payload
+    except JWTError:
+        raise credentials_exception
+    user = get_db_connection().get(username, None)
+    if user is None:
+        raise credentials_exception
+    return user
