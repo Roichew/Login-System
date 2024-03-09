@@ -31,33 +31,22 @@
 </body>
 
 <script>
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('password', password);
-
-    fetch('/login/', {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Failed to login');
-        }
-    })
-    .then(data => {
-        document.getElementById('message').textContent = data.message;
-    })
-    .catch(error => {
-        document.getElementById('message').textContent = error.message;
-    });
+    const response = await fetch('/login/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
 });
+
+    const data = await response.json();
+    alert("Login Failed! Please try again");
+});
+
+
 </script>
 </html>
