@@ -46,9 +46,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       const data = await response.json();
       localStorage.setItem('token', data.access_token);
       alert(data.message);
-      window.location.href = '#'; // Assuming profile.html is the profile page
+      window.location.href = '/profile-page/'; // Assuming profile.html is the profile page
     }else {
-      const data = await response.json();
+      const data = await response.json(); 
       alert(data.message);
     }
 });

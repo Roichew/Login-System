@@ -16,6 +16,15 @@ from passlib.context import CryptContext
 
 app = FastAPI()
 
+SECRET_KEY = "a_very_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+class User(BaseModel):
+    username: str
 #DB creation
 #------------------------------------------------------------------
 
@@ -112,13 +121,17 @@ async def read_signup():
 @app.post("/update/")
 async def signup(username: str = Form(...), password: str = Form(...)):
     conn = get_db_connection()
-    try:
+    cursor = conn.cursor()
+    hashed_password = pwd_context.hash(password)
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    if cursor.fetchone():
+        cursor.execute("UPDATE users SET hashed_password = ? WHERE username = ?", (hashed_password, username))
         conn.commit()
-    except sqlite3.IntegrityError:
-        raise HTTPException(status_code=400, detail="Username already taken")
-    finally:
         conn.close()
-    return {"message": "User registered successfully"}
+        return {"message": "Password Successfully Updated!"}
+    else:
+        conn.close()
+        return {"message": "Username Not Found!"}
 
 @app.get("/update-page/", response_class=HTMLResponse)
 async def read_signup():
@@ -126,21 +139,14 @@ async def read_signup():
         html_content = f.read()
     return HTMLResponse(content=html_content, status_code=200)
 
+@app.get("/profile-page/", response_class=HTMLResponse)
+async def read_signup():
+    with open('profile.html', 'r') as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-SECRET_KEY = "a_very_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-# Dummy function to get a fake user
-def fake_hash_password(password: str):
-    return "fakehashed" + password
-
-# User model for demonstration purposes
-class User(BaseModel):
-    username: str
 
 # Modify or replace with your actual database model
 class UserInDB(User):
@@ -149,7 +155,7 @@ class UserInDB(User):
 # Function to authenticate user and return user if successful
 def authenticate_user(fake_db, username: str, password: str):
     user = fake_db.get(username, None)
-    if not user or not fake_hash_password(password) == user.hashed_password:
+    if not user or not pwd_context.hash(password)(password) == user.hashed_password:
         return False
     return user
 
@@ -187,4 +193,4 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
     user = get_db_connection().get(username, None)
     if user is None:
         raise credentials_exception
-    return user
+    return {"username": "johndoe"}
