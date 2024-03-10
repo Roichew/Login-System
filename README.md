@@ -12,3 +12,5 @@ When Running in Visual Studio:
 5. type in ".venv\Scripts\activate" to activate VE
 6. type in uvicorn main:app --reload
 7. Click and Open the link http://127.0.0.1:8000
+
+(DB Browser to check the database)
