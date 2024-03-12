@@ -1,4 +1,5 @@
 # Login-System
+This is a simple login web system using Python, FastAPI, and SQLite as the backend procedure and HTML, CSS and Javascript as the frontend.
 Run Program Through Command Prompt:-
 
 PYTHON VERSION:  3.12.2
